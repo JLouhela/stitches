@@ -293,6 +293,19 @@ Six milestones, each deployed to Pages and tried on the real tablet before the n
 | 4 | Layers | Layers panel with every operation, Move tool with nudge arrows | A motif on one layer moves across another without disturbing it, and goes off the edge and back intact |
 | 5 | Output and polish | PNG export, thread list, portrait layout, settings, update button, backup marker | She designs a small pattern start to finish and shares its image and thread list |
 
+### Status
+
+Built means the code is in the repository and passes the unit tests and a desktop browser check. Each milestone still needs its tablet check from the table above, and I could not do that part.
+
+- [x] 0 Skeleton and deploy: built. [ ] Tablet check: open the Pages URL, install, start offline.
+- [x] 1 Canvas and touch: built. [ ] Tablet check.
+- [x] 2 Saving: built. [ ] Tablet check.
+- [x] 3 Threads: built (489 colours, including codes 01 to 35). [ ] Tablet check.
+- [x] 4 Layers: built. [ ] Tablet check.
+- [x] 5 Output and polish: built. [ ] Tablet check.
+
+The touch checklists are in the README.
+
 ### Every milestone also needs
 
 - Unit tests for the new model code, run in CI before deploy: paint, erase, fill, move, merge, composite, undo and redo, and a serialise round trip.
