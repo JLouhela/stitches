@@ -289,3 +289,15 @@ describe('thread data', () => {
     expect(contrastText('#FFFFFF')).toBe('#000000');
   });
 });
+
+describe('colour families', () => {
+  it('puts every thread in exactly one non-empty group', async () => {
+    const { GROUPS, familyOf } = await import('./threads');
+    expect(GROUPS.reduce((n, g) => n + g.threads.length, 0)).toBe(THREADS.length);
+    for (const g of GROUPS) expect(g.threads.length).toBeGreaterThan(5);
+    expect(familyOf('#000000')).toBe('Whites & greys');
+    expect(familyOf('#CC0000')).toBe('Reds');
+    expect(familyOf('#1E5AA8')).toBe('Blues');
+    expect(familyOf('#2E8B3A')).toBe('Greens');
+  });
+});

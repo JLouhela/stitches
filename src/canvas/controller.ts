@@ -17,7 +17,7 @@ export interface ControllerHooks {
   offset(o: { dx: number; dy: number } | null): void;
 }
 
-type Mode = 'idle' | 'stroke' | 'tap' | 'move' | 'pan' | 'gesture';
+type Mode = 'idle' | 'stroke' | 'tap' | 'move' | 'pan' | 'gesture' | 'scroll';
 
 interface Pt { x: number; y: number }
 
@@ -37,6 +37,7 @@ export class Controller {
   private gesture: { dist: number; mid: Pt } | null = null;
   private activeTool: Tool = 'pencil';
   private lastPan: Pt | null = null;
+  private scrollAxis: 'x' | 'y' = 'x';
 
   constructor(
     private el: HTMLCanvasElement,
@@ -92,6 +93,20 @@ export class Controller {
       return;
     }
     if (this.mode === 'gesture') return; // wait for all fingers to lift
+
+    const bar = this.renderer.hitScrollbar(pt.x, pt.y);
+    if (bar) {
+      this.mode = 'scroll';
+      this.scrollAxis = bar.axis;
+      this.lastPan = pt;
+      if (!bar.onThumb) this.renderer.scrollThumbTo(bar.axis, bar.axis === 'x' ? pt.x : pt.y);
+      return;
+    }
+    if (this.renderer.inGutter(pt.x, pt.y)) {
+      this.mode = 'pan'; // the number gutters never draw
+      this.lastPan = pt;
+      return;
+    }
 
     const tool = this.hooks.tool();
     this.activeTool = tool;
@@ -157,6 +172,12 @@ export class Controller {
         break;
       case 'pan':
         if (this.lastPan) this.renderer.panBy(pt.x - this.lastPan.x, pt.y - this.lastPan.y);
+        this.lastPan = pt;
+        break;
+      case 'scroll':
+        if (this.lastPan) {
+          this.renderer.scrollThumbBy(this.scrollAxis, this.scrollAxis === 'x' ? pt.x - this.lastPan.x : pt.y - this.lastPan.y);
+        }
         this.lastPan = pt;
         break;
       case 'tap':

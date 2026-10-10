@@ -32,6 +32,7 @@ export function CanvasView() {
     let first = true;
     const ro = new ResizeObserver(() => {
       renderer.resize();
+      if (renderer.width < 1 || renderer.height < 1) return; // not laid out yet; wait for a real size
       if (first) { renderer.fit(); first = false; } else renderer.setView(renderer.view);
     });
     ro.observe(canvas);
@@ -50,3 +51,5 @@ export function CanvasView() {
 
   return <canvas ref={ref} class="pattern-canvas" aria-label="Pattern canvas" />;
 }
+
+if (import.meta.env.DEV) (window as unknown as { __live: typeof live }).__live = live; // dev-only debug handle

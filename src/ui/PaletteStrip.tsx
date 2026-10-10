@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'preact/hooks';
 import { signal } from '@preact/signals';
-import { getThread, contrastText, searchThreads, threadHex, threadId, type Thread } from '../model/threads';
+import { getThread, contrastText, GROUPS, searchThreads, threadHex, threadId, type Thread } from '../model/threads';
 import { revision, selectedEntry, session, showToast } from '../state';
 import { Sheet } from './dialogs';
 import { Edit, Plus } from './icons';
@@ -89,6 +89,8 @@ function ThreadPicker() {
   const mode = picker.value!;
   const ed = session.value!.editor;
   const [q, setQ] = useState('');
+  const [grouped, setGrouped] = useState(true);
+  const [open, setOpen] = useState<string | null>(null);
   const list = useMemo(() => searchThreads(q), [q]);
   const inPalette = new Set(ed.pattern.palette.map((e) => e.thread));
   const title = mode.mode === 'add' ? 'Choose a thread' : 'Replace thread';
@@ -102,6 +104,17 @@ function ThreadPicker() {
     }
     close();
   };
+const card = (t: Thread) => (
+    <button
+      key={t.code}
+      class={`thread-card${inPalette.has(threadId(t.code)) ? ' used' : ''}`}
+      onClick={() => choose(t)}
+      aria-label={`DMC ${t.code} ${t.name}`}
+    >
+      <span class="thread-swatch" style={{ background: threadHex(threadId(t.code)), color: contrastText(t.hex) }}>{t.code}</span>
+      <span class="thread-name">{t.name}</span>
+    </button>
+  );
   const current = mode.mode === 'replace' ? ed.pattern.palette.find((e) => e.id === mode.entryId) : undefined;
   return (
     <Sheet title={title} onClose={close} full>
@@ -117,20 +130,36 @@ function ThreadPicker() {
         onInput={(e) => setQ((e.target as HTMLInputElement).value)}
         aria-label="Search threads"
       />
-      <div class="thread-grid">
-        {list.map((t) => (
-          <button
-            key={t.code}
-            class={`thread-card${inPalette.has(threadId(t.code)) ? ' used' : ''}`}
-            onClick={() => choose(t)}
-            aria-label={`DMC ${t.code} ${t.name}`}
-          >
-            <span class="thread-swatch" style={{ background: threadHex(threadId(t.code)), color: contrastText(t.hex) }}>{t.code}</span>
-            <span class="thread-name">{t.name}</span>
-          </button>
-        ))}
-        {list.length === 0 && <p class="hint">No thread matches "{q}".</p>}
-      </div>
+      {q.trim() === '' && (
+        <div class="row">
+          <button class={`btn${grouped ? ' active' : ''}`} aria-pressed={grouped} onClick={() => setGrouped(true)}>By colour</button>
+          <button class={`btn${!grouped ? ' active' : ''}`} aria-pressed={!grouped} onClick={() => setGrouped(false)}>All threads</button>
+        </div>
+      )}
+      {q.trim() === '' && grouped ? (
+        <div class="families">
+          {GROUPS.map((g) => (
+            <section key={g.family} class="family">
+              <button class="family-head" aria-expanded={open === g.family} onClick={() => setOpen(open === g.family ? null : g.family)}>
+                <span class="family-name">{g.family}</span>
+                <span class="family-samples" aria-hidden="true">
+                  {g.threads.filter((_, i) => i % Math.max(1, Math.floor(g.threads.length / 8)) === 0).slice(0, 8).map((t) => (
+                    <i key={t.code} style={{ background: t.hex }} />
+                  ))}
+                </span>
+                <span class="family-count">{g.threads.length}</span>
+                <span class="family-chev">{open === g.family ? '−' : '+'}</span>
+              </button>
+              {open === g.family && <div class="thread-grid">{g.threads.map(card)}</div>}
+            </section>
+          ))}
+        </div>
+      ) : (
+        <div class="thread-grid">
+          {list.map(card)}
+          {list.length === 0 && <p class="hint">No thread matches "{q}".</p>}
+        </div>
+      )}
     </Sheet>
   );
 }

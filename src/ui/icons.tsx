@@ -26,3 +26,4 @@ export const Down = make(<path d="M12 5v14M5 12l7 7 7-7" />);
 export const Left = make(<path d="M19 12H5M12 5l-7 7 7 7" />);
 export const Right = make(<path d="M5 12h14M12 5l7 7-7 7" />);
 export const Edit = make(<path d="M4 20l4-1 11-11-3-3L5 16l-1 4z" />);
+export const Expand = make(<path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5M9 9L4 4M15 9l5-5M9 15l-5 5M15 15l5 5" />);

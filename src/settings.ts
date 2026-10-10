@@ -25,6 +25,7 @@ function persisted<T>(name: string, fallback: T): Signal<T> {
 export const lastTool = persisted<Tool>('tool', 'pencil');
 export const showGrid = persisted<boolean>('grid', true);
 export const fingersOnlyPan = persisted<boolean>('fingersOnlyPan', false);
-export const layersOpen = persisted<boolean>('layersOpen', true);
+// Open by default only where there is room for it next to the canvas.
+export const layersOpen = persisted<boolean>('layersOpen2', typeof matchMedia === 'function' && matchMedia('(min-width: 1180px)').matches);
 export const exportScale = persisted<number>('exportScale', 10);
 export const exportGrid = persisted<boolean>('exportGrid', false);

@@ -5,10 +5,10 @@ import type { Tool } from '../canvas/controller';
 import { layersOpen, lastTool } from '../settings';
 import { loadIndex } from '../storage/db';
 import { saveError, saveStatus } from '../storage/autosave';
-import { closeEditor, revision, session, toast, updateReady } from '../state';
+import { closeEditor, revision, session, showToast, toast, updateReady } from '../state';
 import { CanvasView, dragOffset, live } from './CanvasView';
 import { promptDialog, Sheet } from './dialogs';
-import { Back, Dropper, Down, Eraser, Fill, Fit, Hand, Layers, Left, Menu, Move, Pencil, Redo, Right, Undo, Up, ZoomIn, ZoomOut } from './icons';
+import { Back, Dropper, Down, Eraser, Expand, Fill, Fit, Hand, Layers, Left, Menu, Move, Pencil, Redo, Right, Undo, Up, ZoomIn, ZoomOut } from './icons';
 import { LayersPanel } from './LayersPanel';
 import { PaletteStrip } from './PaletteStrip';
 import { ExportSheet, SettingsSheet, ThreadListSheet } from './Sheets';
@@ -25,6 +25,30 @@ const TOOLS: { id: Tool; label: string; Icon: () => JSX.Element }[] = [
 type SheetName = null | 'menu' | 'export' | 'threads' | 'settings' | 'layers';
 const sheet = signal<SheetName>(null);
 const nudgeBackup = signal(false);
+
+type FsDoc = Document & { webkitFullscreenElement?: Element; webkitExitFullscreen?: () => Promise<void> };
+type FsEl = HTMLElement & { webkitRequestFullscreen?: () => Promise<void> };
+const fsSupported = typeof document !== 'undefined' &&
+  !!(document.documentElement.requestFullscreen || (document.documentElement as FsEl).webkitRequestFullscreen);
+const isFullscreen = signal(false);
+if (typeof document !== 'undefined') {
+  const sync = () => { isFullscreen.value = !!(document.fullscreenElement || (document as FsDoc).webkitFullscreenElement); };
+  document.addEventListener('fullscreenchange', sync);
+  document.addEventListener('webkitfullscreenchange', sync);
+}
+
+async function toggleFullscreen(): Promise<void> {
+  try {
+    const d = document as FsDoc;
+    if (isFullscreen.value) await (d.exitFullscreen?.() ?? d.webkitExitFullscreen?.());
+    else {
+      const el = document.documentElement as FsEl;
+      await (el.requestFullscreen?.() ?? el.webkitRequestFullscreen?.());
+    }
+  } catch {
+    showToast('Full screen is not available here. Add the app to the home screen to run it full screen.');
+  }
+}
 
 function usePortrait(): boolean {
   const mq = typeof matchMedia === 'function' ? matchMedia('(orientation: portrait) and (max-width: 900px)') : null;
@@ -69,6 +93,11 @@ function TopBar(props: { portrait: boolean }) {
         onClick={() => { if (props.portrait) sheet.value = 'layers'; else layersOpen.value = !layersOpen.value; }}
         aria-label="Layers"
       ><Layers /><span>Layers</span></button>
+      {fsSupported && (
+        <button class={`btn icon-label${isFullscreen.value ? ' active' : ''}`} onClick={() => void toggleFullscreen()} aria-label={isFullscreen.value ? 'Exit full screen' : 'Full screen'}>
+          <Expand /><span>{isFullscreen.value ? 'Exit' : 'Full'}</span>
+        </button>
+      )}
       <button class="btn icon-label" onClick={() => { sheet.value = 'menu'; }} aria-label="Menu"><Menu /><span>Menu</span></button>
     </header>
   );
@@ -160,6 +189,11 @@ export function EditorScreen() {
           <div class="menu-list">
             <button class="btn wide" onClick={() => { sheet.value = 'export'; }}>Export…</button>
             <button class="btn wide" onClick={() => { sheet.value = 'threads'; }}>Thread list</button>
+            {fsSupported && (
+              <button class="btn wide" onClick={() => { sheet.value = null; void toggleFullscreen(); }}>
+                {isFullscreen.value ? 'Exit full screen' : 'Full screen'}
+              </button>
+            )}
             <button class="btn wide" onClick={() => { sheet.value = 'settings'; }}>Settings</button>
             <button class="btn wide" onClick={() => { live.renderer?.fit(); sheet.value = null; }}>Fit pattern to screen</button>
           </div>

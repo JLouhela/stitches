@@ -233,3 +233,30 @@ button, select, input, label, summary, a { touch-action: manipulation; }
 @media (max-width: 760px) {
   .topbar .btn.icon-label span { display: none; }
 }
+
+/* ---- grouped colour picker ---- */
+.families { display: flex; flex-direction: column; gap: 8px; }
+.family { border: 1px solid var(--line); border-radius: 12px; background: #fff; overflow: hidden; }
+.family-head { width: 100%; min-height: 56px; display: flex; align-items: center; gap: 12px; padding: 6px 12px; border: 0; background: transparent; font: inherit; color: inherit; cursor: pointer; text-align: left; }
+.family-name { font-weight: 600; font-size: 16px; min-width: 120px; }
+.family-samples { flex: 1; display: flex; gap: 4px; }
+.family-samples i { width: 28px; height: 28px; border-radius: 6px; border: 1px solid rgba(0,0,0,0.25); }
+.family-count { color: var(--muted); font-size: 13px; }
+.family-chev { font-size: 24px; width: 28px; text-align: center; }
+.family .thread-grid { padding: 8px; border-top: 1px solid var(--line); }
+
+/* ---- less crowded on tablets: tighter bars when the screen is short or narrow ---- */
+@media (max-height: 860px) {
+  .topbar { padding-top: calc(3px + var(--safe-t)); padding-bottom: 3px; gap: 4px; }
+  .topbar .btn { padding: 0 8px; }
+  .tool-rail { gap: 2px; padding: 4px 4px 4px calc(4px + var(--safe-l)); }
+  .tool { width: 60px; min-height: 48px; font-size: 10px; }
+  .palette-strip { padding-top: 4px; padding-bottom: calc(4px + var(--safe-b)); gap: 6px; }
+  .swatch { height: 44px; }
+  .current { min-width: 130px; }
+  .layers-panel { font-size: 14px; }
+}
+@media (max-width: 1100px) {
+  .topbar .btn.icon-label span { display: none; }
+  .topbar .btn.icon-label { padding: 0 10px; }
+}
