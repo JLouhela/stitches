@@ -92,6 +92,30 @@ export function ExportSheet(props: { onClose: () => void; onThreadList: () => vo
   );
 }
 
+/** Shows what the browser reports for a pen or finger, to tell app bugs from system ink. */
+function InputTest() {
+  const [info, setInfo] = useState('Touch or draw here with the pen.');
+  const [log, setLog] = useState<string[]>([]);
+  const show = (e: PointerEvent) => {
+    const co = e.getCoalescedEvents ? e.getCoalescedEvents().length : 0;
+    const line = `${e.type} ${e.pointerType} pressure ${e.pressure.toFixed(2)} buttons ${e.buttons} coalesced ${co}`;
+    setInfo(line);
+    if (e.type !== 'pointermove') setLog((l) => [line, ...l].slice(0, 6));
+  };
+  return (
+    <div class="input-test" style={{ touchAction: 'none' }}
+      onPointerDown={(e) => { e.preventDefault(); show(e); }}
+      onPointerMove={(e) => { if (e.buttons) show(e); }}
+      onPointerUp={show}
+      onPointerCancel={show}
+      onTouchStart={(e) => e.preventDefault()}
+    >
+      <strong>{info}</strong>
+      <ul>{log.map((l, i) => <li key={i}>{l}</li>)}</ul>
+    </div>
+  );
+}
+
 export function SettingsSheet(props: { onClose: () => void }) {
   return (
     <Sheet title="Settings" onClose={props.onClose}>
@@ -103,6 +127,11 @@ export function SettingsSheet(props: { onClose: () => void }) {
         <input type="checkbox" checked={fingersOnlyPan.value} onChange={(e) => { fingersOnlyPan.value = (e.target as HTMLInputElement).checked; }} />
         Fingers only move the canvas (draw with a stylus)
       </label>
+      <section class="block">
+        <h3>Pen test</h3>
+        <p class="hint">Draw in the box. It should say pointerdown pen. If you still see an ink trail, the tablet itself is drawing it.</p>
+        <InputTest />
+      </section>
       <section class="block">
         <h3>About</h3>
         <p class="hint">

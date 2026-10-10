@@ -260,3 +260,6 @@ button, select, input, label, summary, a { touch-action: manipulation; }
   .topbar .btn.icon-label span { display: none; }
   .topbar .btn.icon-label { padding: 0 10px; }
 }
+
+.input-test { border: 2px dashed var(--line); border-radius: 12px; min-height: 120px; padding: 10px; font-size: 14px; background: #fff; }
+.input-test ul { margin: 6px 0 0; padding-left: 18px; color: var(--muted); }

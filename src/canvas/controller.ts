@@ -52,7 +52,14 @@ export class Controller {
     el.addEventListener('lostpointercapture', this.lost);
     el.addEventListener('contextmenu', this.noMenu);
     el.addEventListener('wheel', this.wheel, { passive: false });
+    // Stylus and touch also arrive as legacy touch events on some tablets; cancelling them stops
+    // system gestures, ink overlays and text selection from competing with the pointer events.
+    for (const t of ['touchstart', 'touchmove', 'dragstart', 'selectstart', 'gesturestart'] as const) {
+      el.addEventListener(t, this.block, { passive: false });
+    }
   }
+
+  private block = (e: Event) => { e.preventDefault(); };
 
   dispose(): void {
     const el = this.el;
@@ -63,6 +70,9 @@ export class Controller {
     el.removeEventListener('lostpointercapture', this.lost);
     el.removeEventListener('contextmenu', this.noMenu);
     el.removeEventListener('wheel', this.wheel);
+    for (const t of ['touchstart', 'touchmove', 'dragstart', 'selectstart', 'gesturestart'] as const) {
+      el.removeEventListener(t, this.block);
+    }
   }
 
   /** Abandons whatever is in progress (used when the tool or layer is changed from the UI). */
